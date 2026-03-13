@@ -76,8 +76,10 @@ def calculate_url_risk(url):
 # ==========================================
 # 3. المسار المدمج (الرسالة + التفاصيل الكاملة للرابط)
 # ==========================================
-@app.route("/analyze_full", methods=["POST"])
+@app.route("/analyze_full", methods=["POST", "OPTIONS"])
 def analyze_full():
+    if request.method == 'OPTIONS':
+    return jsonify({'status': 'ok'}), 200
     data = request.get_json()
     full_text = data.get("text", "").strip()
     
