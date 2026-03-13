@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>نظام كشف الهندسة الاجتماعية الشامل</title>
+  <style>
+    :root {
+      --bg: #0f172a; --card: #1e293b; --muted: #94a3b8; --text: #f8fafc;
+      --accent: #3b82f6; --danger: #ef4444; --success: #22c55e; --warning: #f59e0b;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }
+    body { margin: 0; background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
+    .container { width: 100%; max-width: 800px; }
+    
+    .header { text-align: center; margin-bottom: 30px; }
+    .header h1 { color: var(--accent); margin-bottom: 10px; }
+    .header p { color: var(--muted); font-size: 1.1rem; }
+
+    .input-box { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); }
+    textarea { width: 100%; height: 120px; padding: 15px; border-radius: 10px; border: 1px solid var(--border); background: #0b1120; color: white; resize: vertical; font-size: 1rem; margin-bottom: 15px; }
+    textarea:focus { outline: none; border-color: var(--accent); }
+    button { width: 100%; padding: 15px; border-radius: 10px; border: none; background: linear-gradient(to right, #2563eb, #3b82f6); color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    button:hover { opacity: 0.9; transform: translateY(-2px); }
+    
+    .loading { text-align: center; color: var(--accent); display: none; margin-top: 20px; font-weight: bold; }
+    
+    .report-section { display: none; margin-top: 30px; gap: 20px; flex-direction: column; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .card-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+    
+    .risk-high { color: var(--danger); }
+    .risk-low { color: var(--success); }
+    .risk-med { color: var(--warning); }
+    
+    .result-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; }
+    .result-label { color: var(--muted); }
+    .result-value { font-weight: bold; }
+    
+    .reasons-list { margin: 10px 0 0 20px; color: var(--muted); font-size: 0.9rem; }
+    .url-box { margin-bottom: 20px; border: 1px dashed var(--border); padding: 15px; border-radius: 8px; background: #0b1120; }
+    .divider { height: 1px; background: var(--border); margin: 15px 0; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>درع الحماية الذكي (AI Scanner)</h1>
+      <p>قم بلصق رسالة الواتساب، الإيميل، أو الرابط بالكامل هنا لفحصه</p>
+    </div>
+
+    <div class="input-box">
+      <textarea id="textInput" placeholder="مثال: مبروك لقد ربحت سيارة! ادخل بياناتك هنا http://win-car-free.com"></textarea>
+      <button id="analyzeBtn">فحص وتحليل شامل</button>
+      <div id="loading" class="loading">جاري التحليل المعمق للرسالة والروابط...</div>
+    </div>
+
+    <div id="reportSection" class="report-section">
+      
+      <div class="card" id="textReport">
+        <div class="card-title">📝 تحليل محتوى الرسالة (الذكاء الاصطناعي)</div>
+        <div id="textDetails"></div>
+      </div>
+
+      <div class="card" id="urlReport">
+        <div class="card-title">🔗 تحليل الروابط المرفقة (التفاصيل التقنية والخطورة)</div>
+        <div id="urlDetails"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const BACKEND_URL = "http://127.0.0.1:5000/analyze_full";
+    const analyzeBtn = document.getElementById("analyzeBtn");
+    const textInput = document.getElementById("textInput");
+    const reportSection = document.getElementById("reportSection");
+    const loading = document.getElementById("loading");
+
+    analyzeBtn.addEventListener("click", async () => {
+      const textStr = textInput.value.trim();
+      if (!textStr) { alert("الرجاء إدخال الرسالة أولاً!"); return; }
+
+      reportSection.style.display = "none";
+      loading.style.display = "block";
+
+      try {
+        const res = await fetch(BACKEND_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: textStr })
+        });
+        
+        const data = await res.json();
+        loading.style.display = "none";
+
+        if(data.error) {
+            alert("خطأ: " + data.error);
+            return;
+        }
+
+        renderReport(data);
+        reportSection.style.display = "flex";
+
+      } catch (e) {
+        loading.style.display = "none";
+        alert("خطأ في الاتصال بالخادم. تأكد من تشغيل in2.py");
+      }
+    });
+
+    function renderReport(data) {
+      // 1. عرض تحليل النص
+      const textDiv = document.getElementById("textDetails");
+      if (data.text_analysis.analyzed) {
+        const isPhish = data.text_analysis.is_phishing;
+        const conf = data.text_analysis.confidence;
+        const riskClass = isPhish ? 'risk-high' : 'risk-low';
+        const statusText = isPhish ? 'رسالة خداع وتصيد (خطر)' : 'رسالة آمنة وطبيعية';
+        
+        textDiv.innerHTML = `
+          <div class="result-row">
+            <span class="result-label">حالة الرسالة:</span>
+            <span class="result-value ${riskClass}">${statusText}</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">نسبة الخطورة (الثقة):</span>
+            <span class="result-value ${riskClass}">${conf}%</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">لغة الفحص:</span>
+            <span class="result-value">${data.text_analysis.language}</span>
+          </div>
+        `;
+      } else {
+        textDiv.innerHTML = `<div style="color: var(--muted)">${data.text_analysis.reason || 'تعذر تحليل النص'}</div>`;
+      }
+
+      // 2. عرض تحليل الروابط
+      const urlDiv = document.getElementById("urlDetails");
+      if (data.urls_analysis.length === 0) {
+        urlDiv.innerHTML = `<div style="color: var(--muted)">لم يتم اكتشاف أي روابط داخل هذه الرسالة.</div>`;
+      } else {
+        urlDiv.innerHTML = "";
+        data.urls_analysis.forEach((u, index) => {
+          const riskClass = u.risk_score >= 60 ? 'risk-high' : (u.risk_score >= 30 ? 'risk-med' : 'risk-low');
+          let reasonsHTML = u.risk_reasons.map(r => `<li>${r}</li>`).join('');
+          
+          urlDiv.innerHTML += `
+            <div class="url-box">
+              <div class="result-row" style="background: transparent; padding: 0;">
+                <span class="result-label">الرابط ${index + 1}:</span>
+                <span class="result-value" style="word-break: break-all; color: var(--accent);">${u.url}</span>
+              </div>
+              
+              <div class="result-row">
+                <span class="result-label">نسبة خطورة الرابط:</span>
+                <span class="result-value ${riskClass}">${u.risk_score}%</span>
+              </div>
+              <div style="margin-top: 5px; margin-bottom: 15px;">
+                <span class="result-label">سبب التقييم:</span>
+                <ul class="reasons-list">${reasonsHTML}</ul>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="result-row">
+                <span class="result-label">النطاق (Domain):</span>
+                <span class="result-value">${u.domain}</span>
+              </div>
+              <div class="result-row">
+                <span class="result-label">البروتوكول:</span>
+                <span class="result-value">${u.protocol}</span>
+              </div>
+              <div class="result-row">
+                <span class="result-label">رمز الحالة (Status Code):</span>
+                <span class="result-value">${u.status_code}</span>
+              </div>
+              <div class="result-row">
+                <span class="result-label">زمن الاستجابة:</span>
+                <span class="result-value">${u.elapsed_seconds} ثانية</span>
+              </div>
+              <div class="result-row">
+                <span class="result-label">حالة الخادم (الآن):</span>
+                <span class="result-value" style="color: ${u.is_reachable ? 'var(--success)' : 'var(--danger)'}">
+                  ${u.is_reachable ? 'الموقع يعمل (متاح)' : 'الموقع مغلق / لا يستجيب'}
+                </span>
+              </div>
+              
+            </div>
+          `;
+        });
+      }
+    }
+  </script>
+</body>
+</html>
