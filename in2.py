@@ -78,15 +78,20 @@ def calculate_url_risk(url):
 # ==========================================
 @app.route("/analyze_full", methods=["POST", "OPTIONS"])
 def analyze_full():
+    # 1. التعامل مع طلبات OPTIONS (CORS)
     if request.method == 'OPTIONS':
         return jsonify({'status': 'ok'}), 200
-        data = request.get_json()
-        full_text = data.get("text", "").strip()
-    
+
+    # 2. استخراج البيانات (يجب أن يكون خارج شرط OPTIONS ليعمل مع طلبات POST)
+    data = request.get_json() or {}
+    full_text = data.get("text", "").strip()
+
+    # 3. التأكد من وجود النص
     if not full_text:
         return jsonify({"error": "يرجى إدخال النص"}), 400
 
-    urls_found = re.findall(r'(https?://[^\s]+)', full_text)
+    # 4. بقية العمليات (Regex, Detection, etc.)
+    urls_found = re.findall(r'https?://[^\s]+', full_text)
     lang = detect_language(full_text)
     text_analysis = {}
     
