@@ -79,9 +79,9 @@ def calculate_url_risk(url):
 @app.route("/analyze_full", methods=["POST", "OPTIONS"])
 def analyze_full():
     if request.method == 'OPTIONS':
-    return jsonify({'status': 'ok'}), 200
-    data = request.get_json()
-    full_text = data.get("text", "").strip()
+        return jsonify({'status': 'ok'}), 200
+        data = request.get_json()
+        full_text = data.get("text", "").strip()
     
     if not full_text:
         return jsonify({"error": "يرجى إدخال النص"}), 400
