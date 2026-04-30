@@ -1,230 +1,183 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scan</title>
-  <style>
-    :root {
-      --bg: #0f172a; --card: #111827; --muted: #9ca3af; --text: #f9fafb;
-      --accent: #22c55e; --danger: #ef4444; --warning: #f59e0b; --border: #1f2937;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; font-family: "Cairo", system-ui, sans-serif;
-      background: radial-gradient(1200px 600px at 80% -10%, #1f2937 10%, var(--bg) 40%),
-                  radial-gradient(1200px 600px at 20% 110%, #0b1120 10%, var(--bg) 40%);
-      color: var(--text); min-height: 100vh; display: grid; place-items: center; padding: 24px;
-    }
-    .container {
-      width: 100%; max-width: 760px; background: var(--card);
-      border: 1px solid var(--border); border-radius: 16px; padding: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-    .title { margin: 0 0 6px; font-weight: 800; font-size: 1.6rem; }
-    .subtitle { margin: 0 0 20px; color: var(--muted); font-size: 0.95rem; }
-    .field {
-      display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-top: 12px;
-    }
-    input[type="url"] {
-      width: 100%; padding: 14px 16px; border-radius: 12px;
-      border: 1px solid var(--border); background: #0b1220; color: var(--text);
-      outline: none; transition: border-color .2s, box-shadow .2s;
-    }
-    input[type="url"]::placeholder { color: #6b7280; }
-    input[type="url"]:focus {
-      border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37,99,235,0.15);
-    }
-    button {
-      padding: 12px 18px; border-radius: 12px; border: 1px solid #0ea5e9;
-      background: linear-gradient(135deg, #0ea5e9, #2563eb);
-      color: white; font-weight: 700; cursor: pointer; transition: transform .05s, box-shadow .2s;
-    }
-    button:hover { box-shadow: 0 8px 20px rgba(37,99,235,0.35); }
-    button:active { transform: translateY(1px); }
-    /* ✅ مؤشر التحميل */
-    button.loading {
-      background: linear-gradient(135deg, #444, #666);
-      cursor: wait;
-    }
-    .result {
-      margin-top: 18px; padding: 14px; border-radius: 12px; border: 1px dashed var(--border);
-      background: #0b1120;
-    }
-    .badge {
-      display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px;
-      border-radius: 999px; font-size: 0.85rem; margin-inline-end: 8px;
-    }
-    .ok { background: rgba(34,197,94,0.15); color: var(--accent); border: 1px solid rgba(34,197,94,0.35); }
-    .warn { background: rgba(245,158,11,0.15); color: var(--warning); border: 1px solid rgba(245,158,11,0.35); }
-    .bad { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.35); }
-    .muted { color: var(--muted); font-size: 0.92rem; }
-    .list { margin-top: 12px; display: grid; gap: 8px; }
-    .item { display: grid; grid-template-columns: 150px 1fr; gap: 8px; align-items: start; }
-    .key { color: var(--muted); }
-    .val { color: var(--text); word-break: break-word; }
-    .footer { margin-top: 18px; color: var(--muted); font-size: 0.85rem; }
-    .hidden { display: none; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>درع الحماية الذكي | SOC Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .glass-panel { background: #1e293b; border: 1px solid #334155; border-radius: 12px; }
+        textarea { resize: vertical; min-height: 120px; }
+        /* تصميم شريط التمرير ليناسب بيئة الـ Dark Mode */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 4px; }
+    </style>
 </head>
-<body>
-  <div class="container">
-    <h1 class="title">أداة فحص الروابط</h1>
-    <p class="subtitle">أدخل رابطًا للتحقق من صحته، اكتشاف البروتوكول، واطّلاع سريع على حالته.</p>
+<body class="min-h-screen p-4 md:p-8 flex justify-center items-start">
 
-    <div class="field">
-      <input id="urlInput" type="url" placeholder="مثال: https://example.com/path?x=1" autocomplete="on">
-      <button id="checkBtn">فحص الرابط</button>
+    <div class="w-full max-w-5xl space-y-8">
+        
+        <header class="text-center space-y-2">
+            <h1 class="text-4xl font-black text-blue-500 tracking-wide">درع الحماية الذكي <span class="text-slate-400 text-2xl font-bold">(AI Scanner)</span></h1>
+            <p class="text-slate-400 text-lg">قم بلصق رسالة الواتساب، الإيميل، أو الرابط بالكامل هنا لفحصه وتفكيكه</p>
+        </header>
+
+        <div class="glass-panel p-6 shadow-2xl">
+            <textarea id="textInput" class="w-full p-4 rounded-xl bg-slate-900 border border-slate-700 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition" placeholder="مثال: عاجل تم إيقاف حسابك البنكي يرجى التحديث عبر الرابط http://fake-bank.com/login"></textarea>
+            
+            <button id="analyzeBtn" onclick="performAnalysis()" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg py-4 rounded-xl transition transform hover:-translate-y-1 shadow-lg flex justify-center items-center gap-2">
+                <span id="btnText">فحص وتحليل شامل للرسالة والروابط</span>
+                <svg id="loadingIcon" class="animate-spin h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            </button>
+        </div>
+
+        <div id="resultsArea" class="hidden space-y-6">
+            
+            <div class="glass-panel p-6 shadow-xl">
+                <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2 border-b border-slate-700 pb-3">
+                    🧠 تحليل محتوى الرسالة (الذكاء الاصطناعي)
+                </h2>
+                <div id="textDetails" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    </div>
+            </div>
+
+            <div class="glass-panel p-6 shadow-xl">
+                <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2 border-b border-slate-700 pb-3">
+                    🔗 التحليل التقني للروابط المرفقة (Heuristics & Live Check)
+                </h2>
+                <div id="urlDetails" class="space-y-6">
+                    </div>
+            </div>
+
+        </div>
     </div>
 
-    <div id="result" class="result hidden">
-      <div id="statusBadges"></div>
-      <div class="list">
-        <div class="item"><div class="key">الرابط الأصلي</div><div id="origUrl" class="val"></div></div>
-        <div class="item"><div class="key">الحالة</div><div id="statusText" class="val"></div></div>
-        <div class="item"><div class="key">البروتوكول</div><div id="protocol" class="val"></div></div>
-        <div class="item"><div class="key">المضيف (Domain)</div><div id="hostname" class="val"></div></div>
-        <div class="item"><div class="key">المنفذ</div><div id="port" class="val"></div></div>
-        <div class="item"><div class="key">المسار</div><div id="path" class="val"></div></div>
-        <div class="item"><div class="key">المعاملات (Query)</div><div id="query" class="val"></div></div>
-        <div class="item"><div class="key">الـ URL المنسّق</div><div id="normalized" class="val"></div></div>
-      </div>
-      <div class="footer">ملاحظة: فحص الحالة يتم عبر backend مباشرةً.</div>
-    </div>
-  </div>
+    <script>
+        async function performAnalysis() {
+            const textInput = document.getElementById('textInput').value.trim();
+            if (!textInput) return alert('الرجاء إدخال نص أو رابط للفحص.');
 
-  <script>
-    // ✅ عنوان الإنتاج (غيّره إلى رابطك عند النشر)
-const BACKEND_STATUS_CHECK_URL = "https://link-checker-api-0enu.onrender.com/check?url=";
-    const input = document.getElementById("urlInput");
-    const btn = document.getElementById("checkBtn");
-    const result = document.getElementById("result");
-    const statusBadges = document.getElementById("statusBadges");
-    const statusText = document.getElementById("statusText");
-    const origUrl = document.getElementById("origUrl");
-    const protocol = document.getElementById("protocol");
-    const hostname = document.getElementById("hostname");
-    const port = document.getElementById("port");
-    const path = document.getElementById("path");
-    const query = document.getElementById("query");
-    const normalized = document.getElementById("normalized");
+            // تغيير حالة الزر أثناء التحميل
+            const btn = document.getElementById('analyzeBtn');
+            const btnText = document.getElementById('btnText');
+            const loadingIcon = document.getElementById('loadingIcon');
+            const resultsArea = document.getElementById('resultsArea');
+            
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btnText.innerText = 'جاري التحليل المعمق...';
+            loadingIcon.classList.remove('hidden');
+            resultsArea.classList.add('hidden');
 
-    function isValidUrl(str) {
-      try {
-        const u = new URL(str);
-        return ["http:", "https:"].includes(u.protocol);
-      } catch {
-        return false;
-      }
-    }
+            try {
+                // تذكر تعديل الرابط إذا كنت ترفع على منصة Render
+                const response = await fetch('/analyze_full', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: textInput })
+                });
+                
+                const data = await response.json();
+                renderResults(data);
+                resultsArea.classList.remove('hidden');
+                
+            } catch (error) {
+                alert('فشل الاتصال بالخادم. يرجى التأكد من تشغيل in2.py');
+            } finally {
+                // إعادة الزر لحالته الطبيعية
+                btn.disabled = false;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                btnText.innerText = 'فحص وتحليل شامل للرسالة والروابط';
+                loadingIcon.classList.add('hidden');
+            }
+        }
 
-    function normalizeUrl(str) {
-      const u = new URL(str);
-      const norm = new URL(u.toString());
-      if ((norm.protocol === "http:" && norm.port === "80") ||
-          (norm.protocol === "https:" && norm.port === "443")) {
-        norm.port = "";
-      }
-      const params = [...norm.searchParams.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-      norm.search = "";
-      for (const [k, v] of params) norm.searchParams.append(k, v);
-      return norm.toString();
-    }
+        function renderResults(data) {
+            // 1. معالجة بيانات النص
+            const textDiv = document.getElementById('textDetails');
+            if (data.text_analysis.analyzed) {
+                const isPhishing = data.text_analysis.is_phishing;
+                const statusColor = isPhishing ? 'text-red-400' : 'text-emerald-400';
+                const statusBg = isPhishing ? 'bg-red-900/20 border-red-500/30' : 'bg-emerald-900/20 border-emerald-500/30';
+                const statusText = isPhishing ? '⚠️ رسالة خداع وتصيد (خطر)' : '✅ رسالة آمنة وطبيعية';
 
-    async function checkHttpStatus(url) {
-      if (!BACKEND_STATUS_CHECK_URL) return { supported: false };
-      try {
-        const res = await fetch(BACKEND_STATUS_CHECK_URL + encodeURIComponent(url), { method: "GET" });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return { supported: true, ...(await res.json()) };
-      } catch (e) {
-        return { supported: true, error: e.message };
-      }
-    }
+                textDiv.innerHTML = `
+                    <div class="p-4 rounded-lg border ${statusBg} col-span-1 md:col-span-2">
+                        <span class="block text-slate-400 text-sm mb-1">القرار الأمني:</span>
+                        <span class="font-bold text-lg ${statusColor}">${statusText}</span>
+                    </div>
+                    <div class="p-4 rounded-lg bg-slate-800/50 border border-slate-700">
+                    <span class="block text-slate-400 text-sm mb-1">مستوى ثقة النظام بالقرار:</span>                        <span class="font-bold text-lg text-white">${data.text_analysis.confidence}%</span>
+                    </div>
+                    <div class="p-4 rounded-lg bg-slate-800/50 border border-slate-700">
+                        <span class="block text-slate-400 text-sm mb-1">اللغة المكتشفة:</span>
+                        <span class="font-bold text-lg text-white">${data.text_analysis.language}</span>
+                    </div>
+                `;
+            } else {
+                textDiv.innerHTML = `<div class="col-span-2 text-slate-400 p-4">${data.text_analysis.reason || data.text_analysis.error}</div>`;
+            }
 
-    function renderBadges({ isValid, isHttps, hasQuery, hasHash, httpStatus }) {
-      statusBadges.innerHTML = "";
-      const badges = [];
+            // 2. معالجة بيانات الروابط
+            const urlDiv = document.getElementById('urlDetails');
+            if (data.urls_analysis.length === 0) {
+                urlDiv.innerHTML = `<div class="text-slate-400 p-4 bg-slate-800/30 rounded-lg">لم يتم اكتشاف أي روابط داخل هذه الرسالة.</div>`;
+            } else {
+                urlDiv.innerHTML = '';
+                data.urls_analysis.forEach((u, index) => {
+                    const riskColor = u.risk_score >= 60 ? 'text-red-400' : (u.risk_score >= 30 ? 'text-yellow-400' : 'text-emerald-400');
+                    const reachColor = u.is_reachable ? 'text-emerald-400' : 'text-red-400';
+                    const reachText = u.is_reachable ? 'الموقع يعمل (متاح)' : 'الموقع مغلق / لا يستجيب';
+                    
+                    const reasonsHtml = u.risk_reasons.map(r => `<li class="ml-4 list-disc text-slate-300 text-sm">${r}</li>`).join('');
 
-      badges.push({ text: isValid ? "✅ صيغة صحيحة" : "❌ صيغة غير صحيحة", cls: isValid ? "ok" : "bad" });
-
-      if (isValid) {
-        badges.push({ text: isHttps ? "🔒 آمن (HTTPS)" : "⚠️ غير مشفّر (HTTP)", cls: isHttps ? "ok" : "warn" });
-        badges.push({ text: hasQuery ? "📊 يحوي معاملات" : "— لا يحوي معاملات", cls: hasQuery ? "warn" : "muted" });
-        badges.push({ text: hasHash ? "#️⃣ يحوي Hash" : "— لا يحوي Hash", cls: hasHash ? "muted" : "muted" });
-      }
-
-      if (httpStatus?.status) {
-        const ok = httpStatus.status >= 200 && httpStatus.status < 400;
-        badges.push({ text: `🌐 حالة HTTP: ${httpStatus.status}`, cls: ok ? "ok" : "bad" });
-      } else if (httpStatus?.error) {
-        badges.push({ text: `⚠️ خطأ: ${httpStatus.error}`, cls: "warn" });
-      } else if (httpStatus?.supported === false) {
-        badges.push({ text: "🔧 Backend غير مفعّل", cls: "muted" });
-      }
-
-      badges.forEach(b => {
-        const span = document.createElement("span");
-        span.className = `badge ${b.cls}`;
-        span.textContent = b.text;
-        statusBadges.appendChild(span);
-      });
-    }
-
-    btn.addEventListener("click", async () => {
-      const urlStr = input.value.trim();
-      result.classList.add("hidden");
-
-      // ✅ مؤشر التحميل
-      btn.classList.add("loading");
-      btn.textContent = "جاري الفحص...";
-      btn.disabled = true;
-
-      const valid = isValidUrl(urlStr);
-      let urlObj = null;
-
-      if (valid) {
-        urlObj = new URL(urlStr);
-        origUrl.textContent = urlStr;
-        protocol.textContent = urlObj.protocol.replace(":", "");
-        hostname.textContent = urlObj.hostname;
-        port.textContent = urlObj.port || "(افتراضي)";
-        path.textContent = urlObj.pathname || "/";
-        query.textContent = urlObj.search || "(لا توجد معاملات)";
-        normalized.textContent = normalizeUrl(urlStr);
-        statusText.textContent = "الرابط بصيغة صحيحة.";
-      } else {
-        [origUrl, protocol, hostname, port, path, query, normalized].forEach(el => el.textContent = "-");
-        statusText.textContent = "صيغة الرابط غير صحيحة. استخدم http:// أو https://";
-      }
-
-      const httpStatus = valid ? await checkHttpStatus(urlStr) : null;
-
-      if (httpStatus?.error) {
-        statusText.textContent += ` | ${httpStatus.error}`;
-      } else if (httpStatus?.status) {
-        statusText.textContent += ` | الحالة: ${httpStatus.status}`;
-      }
-
-      renderBadges({
-        isValid: valid,
-        isHttps: valid && urlObj?.protocol === "https:",
-        hasQuery: valid && !!urlObj?.search,
-        hasHash: valid && !!urlObj?.hash,
-        httpStatus
-      });
-
-      result.classList.remove("hidden");
-
-      // ✅ إزالة مؤشر التحميل
-      btn.classList.remove("loading");
-      btn.textContent = "فحص الرابط";
-      btn.disabled = false;
-    });
-
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") btn.click();
-    });
-  </script>
+                    urlDiv.innerHTML += `
+                        <div class="p-5 rounded-xl bg-slate-800 border border-slate-600 relative overflow-hidden">
+                            <div class="absolute right-0 top-0 bottom-0 w-2 ${u.risk_score >= 60 ? 'bg-red-500' : (u.risk_score >= 30 ? 'bg-yellow-500' : 'bg-emerald-500')}"></div>
+                            
+                            <div class="mb-4 pr-4 border-b border-slate-700 pb-4">
+                                <span class="text-slate-400 text-sm">الرابط المكتشف ${index + 1}:</span>
+                                <div class="text-blue-400 font-mono mt-1 break-all">${u.url}</div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pr-4">
+                                <div>
+                                    <span class="block text-slate-400 text-sm">مؤشر الخطورة الاستدلالي:</span>
+                                    <span class="font-bold text-xl ${riskColor}">${u.risk_score}%</span>
+                                    <ul class="mt-2 space-y-1">${reasonsHtml}</ul>
+                                </div>
+                                
+                                <div class="space-y-3 bg-slate-900/50 p-4 rounded-lg border border-slate-700">
+                                    <div class="flex justify-between border-b border-slate-700/50 pb-2">
+                                        <span class="text-slate-400">النطاق (Domain):</span>
+                                        <span class="text-white font-mono text-sm">${u.domain || '-'}</span>
+                                    </div>
+                                    <div class="flex justify-between border-b border-slate-700/50 pb-2">
+                                        <span class="text-slate-400">البروتوكول:</span>
+                                        <span class="text-white font-mono text-sm">${u.protocol || '-'}</span>
+                                    </div>
+                                    <div class="flex justify-between border-b border-slate-700/50 pb-2">
+                                        <span class="text-slate-400">رمز الحالة (Status):</span>
+                                        <span class="text-white font-mono text-sm">${u.status_code}</span>
+                                    </div>
+                                    <div class="flex justify-between border-b border-slate-700/50 pb-2">
+                                        <span class="text-slate-400">زمن الاستجابة:</span>
+                                        <span class="text-white font-mono text-sm">${u.elapsed_seconds > 0 ? u.elapsed_seconds + ' ثانية' : '-'}</span>
+                                    </div>
+                                    <div class="flex justify-between pt-1">
+                                        <span class="text-slate-400">حالة الخادم الآن:</span>
+                                        <span class="font-bold text-sm ${reachColor}">${reachText}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+    </script>
 </body>
 </html>
