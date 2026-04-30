@@ -167,4 +167,7 @@ def analyze_full():
     })
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    # الحصول على البورت من السيرفر، وإذا لم يوجد نستخدم 5000 كاحتياط
+    port = int(os.environ.get("PORT", 5000))
+    # إيقاف debug في بيئة الإنتاج لزيادة الأمان والأداء
+    app.run(host="0.0.0.0", port=port, debug=False)
