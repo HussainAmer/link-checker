@@ -1,53 +1,58 @@
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 import joblib
+import os
 
-print("1. جاري تحميل قاعدة بيانات موسعة وصارمة...")
-arabic_data = {
-    'text': [
-        # --- رسائل التصيد (Phishing - 1) بجميع الأشكال ---
-        "عاجل: تم إيقاف حسابك البنكي مؤقتاً بسبب نشاط مشبوه. يرجى الضغط على الرابط لتحديث بياناتك وتأكيد هويتك فوراً لتجنب الحظر النهائي.",
-        '"عاجل: تم إيقاف حسابك البنكي مؤقتاً بسبب نشاط مشبوه. يرجى الضغط على الرابط لتحديث بياناتك وتأكيد هويتك فوراً لتجنب الحظر النهائي.",',
-        "تم ايقاف حسابك البنكي اضغط هنا لتحديث البيانات",
-        "تحديث بياناتك البنكية فورا لتجنب الحظر",
-        "مبروك! لقد ربحت سيارة فاخرة وجائزة مالية، اتصل الآن على هذا الرقم لاستلام جائزتك.",
-        "ربحت جائزة نقدية كبرى اضغط هنا لاستلامها",
-        "تحذير أمني: حسابك في خطر، الرجاء إرسال كلمة المرور ورمز التفعيل لتأمين الحساب.",
-        "أنا مديرك في العمل، أنا في اجتماع طارئ وأحتاج منك تحويل مبلغ مالي بسرعة إلى هذا الحساب.",
-        "تحديث واتساب العاجل: حمل هذه النسخة لتجنب حذف حسابك.",
-        "يرجى النقر على الرابط لتأكيد استلام الشحنة الخاصة بك وإلا سيتم إرجاعها للمرسل.",
-        "تم حظر بطاقتك الائتمانية، ادخل هنا لتأكيد هويتك.",
-        "اربح هاتف مجانا بمجرد الضغط على هذا الرابط السري.",
+print("="*50)
+print("[*] بدء نظام التدريب المزدوج (العربي والإنجليزي)")
+print("="*50)
 
-        # --- رسائل آمنة (Safe - 0) ---
-        "السلام عليكم، نذكركم بموعد المحاضرة غداً في كلية علوم الحاسوب.",
-        "مرحباً، هل يمكنك إرسال تقرير المشروع الخاص بالهندسة الاجتماعية اليوم؟",
-        "تم استلام الدفعة الخاصة بك بنجاح. شكراً لتعاملك معنا.",
-        "أرجو مراجعة الكود المرفق للتأكد من خلوه من الأخطاء البرمجية قبل الرفع.",
-        "صديقي، كيف حالك؟ متى نلتقي لمناقشة تصميم النظام؟",
-        "تمت الموافقة على طلب الإجازة الخاص بك.",
-        "مرفق طيه ملف المشروع، يرجى الاطلاع عليه وإبداء الملاحظات.",
-        "أكدت الجامعة أن امتحانات الفصل الدراسي ستبدأ الأسبوع القادم.",
-        "موعدنا غدا الساعة العاشرة صباحا في مختبر الشبكات.",
-        "تم تحويل الراتب إلى حسابك البنكي بشكل طبيعي هذا الشهر."
-    ],
-    'label': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-}
+# دالة برمجية (Function) لتدريب أي نموذج لتقليل تكرار الكود
+def train_language_model(csv_file, model_name, vectorizer_name, is_arabic=False):
+    print(f"\n[*] جاري معالجة قاعدة البيانات: {csv_file} ...")
+    try:
+        # 1. قراءة البيانات
+        df = pd.read_csv(csv_file)
+        print(f"  - تم العثور على {len(df)} جملة.")
 
-df = pd.DataFrame(arabic_data)
+        # 2. بناء محول النصوص بناءً على اللغة
+        if is_arabic:
+            vectorizer = TfidfVectorizer(ngram_range=(1, 2), token_pattern=r'(?u)\b\w+\b')
+        else:
+            vectorizer = TfidfVectorizer(ngram_range=(1, 2), stop_words='english')
 
-print("2. جاري تحويل النصوص (مع تجاهل الرموز وعلامات الاقتباس)...")
-vectorizer = TfidfVectorizer(ngram_range=(1, 2), token_pattern=r'(?u)\b\w+\b')
-X_vectorized = vectorizer.fit_transform(df['text'])
+        X = vectorizer.fit_transform(df['text'])
+        y = df['label']
 
-print("3. جاري تدريب النموذج باستخدام (Logistic Regression) الأقوى...")
-model = LogisticRegression(C=10.0, class_weight='balanced', random_state=42)
-model.fit(X_vectorized, df['label'])
+        # 3. فحص الدقة (اختبار 20% من البيانات)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        model = MultinomialNB(alpha=0.1)
+        model.fit(X_train, y_train)
+        
+        acc = accuracy_score(y_test, model.predict(X_test))
+        print(f"  - مستوى الدقة (Accuracy): {acc * 100:.2f}%")
 
-print("4. جاري حفظ الملفات في المجلد الحالي...")
-# ستقوم هذه الأوامر بصنع الملفات ووضعها بجانب in2.py تلقائياً!
-joblib.dump(model, 'arabic_phishing_model.pkl')
-joblib.dump(vectorizer, 'arabic_tfidf_vectorizer.pkl')
+        # 4. التدريب النهائي والحفظ
+        model.fit(X, y) # التدريب على 100% من البيانات للحصول على أقصى ذكاء
+        joblib.dump(model, model_name)
+        joblib.dump(vectorizer, vectorizer_name)
+        
+        print(f"  ✅ تم توليد وحفظ النماذج ({model_name}) بنجاح.")
 
-print("✅ مبروك! تم تدريب النموذج وصناعة ملفات الذكاء الاصطناعي بنجاح.")
+    except FileNotFoundError:
+        print(f"  ❌ خطأ: لم يتم العثور على ملف {csv_file} في المجلد.")
+    except Exception as e:
+        print(f"  ❌ خطأ غير متوقع: {e}")
+
+# تنفيذ التدريب للغة العربية
+train_language_model('dataset.csv', 'arabic_phishing_model.pkl', 'arabic_tfidf_vectorizer.pkl', is_arabic=True)
+
+# تنفيذ التدريب للغة الإنجليزية
+train_language_model('dataset_en.csv', 'phishing_model.pkl', 'tfidf_vectorizer.pkl', is_arabic=False)
+
+print("\n" + "="*50)
+print("🎯 تمت عملية التدريب الشاملة بنجاح! السيرفر جاهز للعمل.")
+print("="*50)
